@@ -1,0 +1,44 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage[top=0.75in, bottom=1.75in, left=1in, right=1in,includefoot]
+{geometry}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage[math]{blindtext}
+
+\pagestyle{fancy}
+\fancyhead[L]{\fancyhdrbox[c]{\Large \slshape \sffamily 
+Separation Logic and Compositional Symbolic Execution:\\
+Verification and Bug Detection at Scale}}
+\fancyhead[C]{}
+\fancyhead[R]{\large \sffamily \bfseries Philippa Gardner}
+\fancyfoot[L]{\fancyhdrbox[b]{\sffamily \small Compiled By: \\ 
+\normalsize \sffamily Larry Fine, Curly Howard, Moe Howard}}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\fancyhdrbox[b]{\includegraphics[width=1in]{oplssLogo.png}}}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancypagestyle{plain}{
+\fancyhf{}
+\fancyfoot[L]{\fancyhdrbox[b]{\sffamily \small Compiled By: \\ 
+\normalsize \sffamily Larry Fine, Curly Howard, Moe Howard}}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2ex}
+\setlength{\headheight}{1.25in}
+\begin{document}
+
+\thispagestyle{plain}
+\begin{center}
+\includegraphics[width=3in]{oplssLogo.png}\\
+\sffamily \LARGE \slshape 
+Separation Logic and Compositional Symbolic Execution:\\
+Verification and Bug Detection at Scale\\[2ex]
+\upshape Philippa Gardner\\[2ex]
+\large Lecture 1 - \slshape June 24, 2026
+\end{center}
+
+
+
+\end{document}

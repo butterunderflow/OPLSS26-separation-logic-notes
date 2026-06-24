@@ -5,6 +5,36 @@
 \usepackage{fancyhdr}
 \usepackage[english]{babel}
 \usepackage[math]{blindtext}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\providecommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
+\makeatletter
+\@addtoreset{figure}{section}
+\makeatother
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\newcommand{\List}{\mathsf{List}}
+\newcommand{\LDispose}{\mathsf{LDispose}}
+\newcommand{\reach}{\mathsf{reach}}
+\newcommand{\Assert}{\mathsf{Assert}}
+\newcommand{\True}{\mathsf{True}}
+\newcommand{\False}{\mathsf{False}}
+\newcommand{\Emp}{\mathsf{emp}}
+\newcommand{\sepimp}{\mathrel{-\mkern-6mu\ast}}
+\newcommand{\Eval}[1]{\mathcal{E}[\![#1]\!]_{e,s}}
+\newcommand{\Val}{\mathsf{Val}}
+\newcommand{\Heap}{\mathsf{Heap}}
+\newcommand{\Pred}{\mathsf{pred}}
+\newcommand{\true}{\mathsf{true}}
+\newcommand{\pv}{\mathsf{pv}}
+\newcommand{\Mod}{\mathsf{mod}}
+\newcommand{\Bool}{\mathsf{Bool}}
+\newcommand{\Null}{\mathsf{null}}
+\newcommand{\blueassn}[1]{\textcolor{blue}{#1}}
+\newcommand{\triple}[3]{\vdash\ \blueassn{\{#1\}}\ #2\ \blueassn{\{#3\}}}
 
 \pagestyle{fancy}
 \fancyhead[L]{\fancyhdrbox[c]{\Large \slshape \sffamily 
@@ -38,6 +68,307 @@ Verification and Bug Detection at Scale\\[2ex]
 \upshape Philippa Gardner\\[2ex]
 \large Lecture 1 - \slshape June 24, 2026
 \end{center}
+\section{Hoare Logic and Its Scalability Problem}
+
+\subsubsection*{Overview of Hoare Logic}
+Hoare logic is a reasoning system for proving the specifications of programs.
+It uses Hoare triples of the form $\{P\} C \{Q\}$ to describe program
+specifications, where $C$ is the program, $P$ and $Q$ are assertions that
+describe the precondition and postcondition about program states respectively.
+A Hoare triple is true if, whenever the precondition $P$ holds before executing
+the program $C$, the postcondition $Q$ will hold after executing $C$.
+The Hoare logic provides rules for how to derive valid Hoare triples based on
+the structure of the program.
+
+For example, the following Hoare triple describes a simple assignment:
+
+$$
+\{ x = 0 \}\ x := x + 1\ \{ x = 1 \}
+$$
+
+It says that if $x$ is $0$ before executing the assignment $x := x + 1$,
+then $x$ is $1$ afterward.
+
+\subsubsection*{Separation Matters in Program Verification}
+For programs that manipulate heap-allocated data structures (like linked lists),
+awareness of difference heap locations (pointers) is crucial for reasoning about
+program behavior.
+For example, if we want to reason about a list deallocation program:
+\begin{figure}[H]
+  
+\begin{lstlisting}
+LDispose(x) {
+  while (x != null) {
+    y := x;
+    x := [x + 1];
+    dispose(y);
+    dispose(y + 1)
+  };
+  return null
+}
+
+\end{lstlisting}
+\caption{List Dispose}
+\end{figure}
+
+For this program, the Hoare triple we can prove is:
+
+$$
+\vdash \{ \List(x) \} \LDispose(x) \{ x = null \}
+$$
+
+which means if $x$ points to a valid list before executing $\LDispose$, then
+after executing $\LDispose$, $x$ will be null.
+
+However, Hoare logic has scalability issues in a sense that it does not provide
+a clear and simple way to extend already proven specifications with richer
+assertions.
+
+For example, suppose we have proved the Hoare triple: $\vdash \{ \List(x) \}
+\LDispose(x) \{ x = null \}$. 
+How can we apply it to conclude the postcondition after executing $\LDispose$ in
+a program state that contains two lists $x$ and $y$: $\List(x) \land \List(y)$.
+
+With a simple glance, the precondition is $\List(x) \land \List(y)$, and the
+postcondition should be $x = null \land \List(y)$.
+But this is not true, because $x$ and $y$ could point to the same list! 
+So what we can at most conclude is $x = null$, but we do not know whether $y$ is
+still a valid list.
+
+\subsubsection*{Add Separation Assertions to the Specification}
+To make the specification describe the program correctly and precisely, we need
+to use a more complex assertion that describes the separation of the two lists
+in the precondition:
+
+$$
+(\List(x) \land \List(y)) \land
+(\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = null)
+$$
+
+The $\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = null$ part of
+the assertion says that the two lists $x$ and $y$ are separated, i.e., they do
+not share any common nodes.
+
+Then we can possibly conclude the postcondition $x = null \land \List(y)$.
+
+If we have three lists $x$, $y$ and $z$, we need to write precondition like:
+
+$$
+\begin{array}{l}
+(\List(x, \alpha) \land \List(y, \beta)) \\
+\land\;(\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = null) \\
+\land\;\List(z) \\
+\land\;(\forall u.\ \reach(z, u) \land (\reach(x, u) \lor \reach(y, u))
+  \Rightarrow u = null)
+\end{array}
+$$
+
+And the postcondition is $x = null \land \List(y) \land \List(z) \land 
+(\forall u.\ \reach(z, u) \land \reach(y, u) \Rightarrow u = null)$.
+
+
+It does not scale:
+\begin{itemize}
+  \item It is not even clear where to add the separation assertion.
+  \item When we add more separation assertions, the complexity of formulas grows
+  quadratically. Therefore the time needed to solve the formulas also grows fast.
+\end{itemize}
+
+\section{Separation Logic}
+The scalability problem of Hoare logic is caused by the fact that the formulas
+in the Hoare triples always describe the \emph{entire} program heap.
+Hence, when we want to extend the specification to describe more states, we must
+write more complex formulas that assert the separation of added states with the
+existing states.
+Separation logic is a an approach that addresses this problem directly by
+introducing a new logical connective called the \textit{separating conjunction},
+written as $\star$.
+Instead of describing the entire heap, a formula in separation logic only
+describes only a \emph{part} of the heap, and it uses $\star$ to combine two
+formulas that describe two strictly separate parts of the heap.
+With this separating connective, we can extend the specification in a
+compositional way, without needing to write extra formulas that assert the
+separations.
+
+\subsubsection*{Syntax of Separation Logic Assertions}
+\textbf{Assertions.}
+The set of \emph{assertions}, $\Assert$, ranged over by
+$P, P_1, Q, Q_1, \ldots$, is defined by:
+
+\[
+\begin{array}{rcl@{\qquad}l}
+P \in \Assert & ::= &
+P \land P \mid P \Rightarrow P \mid \True \mid \False
+& \text{classical connectives} \\
+& \mid &
+E = E \mid E > E \mid E \in X \mid \cdots
+& \text{boolean assertions} \\
+& \mid &
+\exists x.\ P
+& \text{quantification} \\
+& \mid &
+P \star P \mid P \sepimp P \mid \Emp
+\mid \displaystyle\mathop{\circledast}_{E_1 \le x < E_2} P
+& \text{separating connectives} \\
+& \mid &
+E \mapsto E
+& \text{cell assertion}
+\end{array}
+\]
+
+\subsubsection*{Meaning of Separation Logic Assertions}
+What kind of program states does an assertion describe?
+The meaning of the main assertion forms is given by the satisfaction relation
+$e, s, h \models P$:
+
+{\small
+\[
+\begin{array}{rcl}
+e, s, h \models P_1 \land P_2
+& \Longleftrightarrow &
+e, s, h \models P_1 \land e, s, h \models P_2 \\
+e, s, h \models P_1 \Rightarrow P_2
+& \Longleftrightarrow &
+e, s, h \models P_1 \Rightarrow e, s, h \models P_2 \\
+e, s, h \models \True
+& \Longleftrightarrow &
+\text{always} \\
+e, s, h \models \False
+& \Longleftrightarrow &
+\text{never} \\
+e, s, h \models E_1 = E_2
+& \Longleftrightarrow &
+(\Eval{E_1 = E_2} = \true) \land h = \emptyset \\
+e, s, h \models E_1 > E_2
+& \Longleftrightarrow &
+(\Eval{E_1 > E_2} = \true) \land h = \emptyset \\
+e, s, h \models E \in X
+& \Longleftrightarrow &
+(\Eval{E \in X} = \true) \land h = \emptyset \\
+e, s, h \models \exists x.\ P
+& \Longleftrightarrow &
+\exists v \in \Val.\ e[x \mapsto v], s, h \models P
+\end{array}
+\]
+}
+
+{\small\color{blue}
+\[
+\begin{array}{@{}rcl@{}}
+e, s, h \models P_1 \star P_2
+& \Longleftrightarrow &
+\begin{aligned}[t]
+& \exists h_1, h_2 \in \Heap.\ h = h_1 \uplus h_2 \land \\
+& e, s, h_1 \models P_1 \land e, s, h_2 \models P_2
+\end{aligned} \\
+e, s, h \models \Emp
+& \Longleftrightarrow &
+h = \emptyset \\
+e, s, h \models \displaystyle\mathop{\circledast}_{E_1 \le x < E_2} P
+& \Longleftrightarrow &
+\begin{aligned}[t]
+& \Eval{E_1} = i \in \mathbb{N}
+  \land \Eval{E_2} = k \in \mathbb{N} \land \\
+& \bigl(i < k \Rightarrow
+  \exists h_i, \ldots, h_{k-1}.\ h = h_i \uplus \cdots \uplus h_{k-1}
+  \land \\
+& \qquad \forall j.\ i \le j < k.\ e, s, h_j \models P[j/x]\bigr) \land \\
+& \bigl(i \ge k \Rightarrow h = \emptyset\bigr)
+\end{aligned} \\
+e, s, h \models E_1 \mapsto E_2
+& \Longleftrightarrow &
+h = \{\Eval{E_1} \mapsto \Eval{E_2}\} \\
+e, s, h \models \Pred(\vec{E})
+& \Longleftrightarrow &
+\cdots
+\end{array}
+\]
+}
+
+\subsubsection*{Separation Logic Rules}
+Some core proof rules for the language without functions are:
+
+{\scriptsize
+\[
+\begin{array}{@{}c@{\quad}l@{}}
+\dfrac{x \notin \pv(E')}
+      {\triple{x = E' \star E \in \Val}{x := E}{x = E[E'/x]}}
+& \textsc{assign} \\[4ex]
+
+\dfrac{x \notin \pv(E')}
+      {\triple{x = E' \star E \mapsto E_1}
+              {x := [E]}
+              {x = E_1[E'/x] \star E[E'/x] \mapsto E_1[E'/x]}}
+& \textsc{lookup} \\[4ex]
+
+\dfrac{}
+      {\triple{E_1 \mapsto E \star E_2 \in \Val}
+              {[E_1] := E_2}
+              {E_1 \mapsto E_2}}
+& \textsc{mutate} \\[4ex]
+
+\dfrac{x \notin \pv(E')}
+      {\triple{x = E' \star E \in \mathbb{N}}
+              {x := \mathsf{new}(E)}
+              {\exists y.\ x = y \star
+               \mathop{\circledast}_{0 \le i < E[E'/x]}((y + i) \mapsto \Null)}}
+& \textsc{new} \\[4ex]
+
+\dfrac{}
+      {\triple{E \mapsto E_1}{\mathsf{dispose}(E)}{\Emp}}
+& \textsc{dispose} \\[4ex]
+
+\dfrac{}
+      {\triple{\Emp}{\mathsf{skip}}{\Emp}}
+& \textsc{skip} \\[4ex]
+
+\dfrac{\triple{P}{C_1}{Q} \qquad \triple{Q}{C_2}{R}}
+      {\triple{P}{C_1;\ C_2}{R}}
+& \textsc{seq} \\[4ex]
+
+\dfrac{\triple{P \land E}{C_1}{Q_1}
+       \qquad
+       \triple{P \land \neg E}{C_2}{Q_2}}
+      {\triple{P \star E \in \Bool}
+              {\mathsf{if}\ (E)\ C_1\ \mathsf{else}\ C_2}
+              {Q_1 \lor Q_2}}
+& \textsc{if} \\[4ex]
+
+\dfrac{\triple{P \land E}{C}{P \star E \in \Bool}}
+      {\triple{P \star E \in \Bool}
+              {\mathsf{while}\ (E)\ C}
+              {P \land \neg E}}
+& \textsc{while} \\[4ex]
+
+\dfrac{\triple{P}{C}{Q}
+       \qquad
+       \Mod(C) \cap \pv(R) = \emptyset}
+      {\triple{P \star R}{C}{Q \star R}}
+& \textsc{frame} \\[4ex]
+
+\dfrac{\models \blueassn{P \Rightarrow P'}
+       \qquad
+       \triple{P'}{C}{Q'}
+       \qquad
+       \models \blueassn{Q' \Rightarrow Q}}
+      {\triple{P}{C}{Q}}
+& \textsc{cons} \\[4ex]
+
+\dfrac{\triple{P}{C}{Q}}
+      {\triple{\exists x.\ P}{C}{\exists x.\ Q}}
+& \textsc{exists} \\[4ex]
+
+\dfrac{\triple{P_1}{C}{Q} \qquad \triple{P_2}{C}{Q}}
+      {\triple{P_1 \lor P_2}{C}{Q}}
+& \textsc{disj}
+\end{array}
+\]
+}
+
+\subsubsection*{Soundness of Separation Logic}
+\[
+\vdash \{P\} C \{Q\} \Rightarrow \models \{P\} C \{Q\}
+\]
 
 
 

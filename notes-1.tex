@@ -11,7 +11,9 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathpartir}
-\usepackage[hidelinks]{hyperref}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{stmaryrd}
 
 \providecommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
 \makeatletter
@@ -204,8 +206,13 @@ E \mapsto E
 
 \subsubsection*{Meaning of Separation Logic Assertions}
 What kind of program states does an assertion describe?
-The meaning of the main assertion forms is given by the satisfaction relation $e, s, h \models P$\,:
+The meaning of the main assertions is given by the satisfaction relation $e, s,
+h \models P$, which says that the assertion $P$ is satisfied in the program
+state $(e, s, h)$, where $e$ is the environment of logical variables, $s$ is the
+environment of program variables, and $h$ is the heap.
 
+\begin{figure}
+      
 \begin{align*}
 e, s, h \models P_1 \land P_2
   &\Longleftrightarrow e, s, h \models P_1 \land e, s, h \models P_2 \\
@@ -245,10 +252,13 @@ e, s, h \models \exists x.\ P
 {\color{blue} e, s, h \models \Pred(\vec{E})}
   &{\color{blue}\ \Longleftrightarrow \cdots}
 \end{align*}
+\caption{Satisfaction Relation for Separation Logic Assertions}
+\label{satisfaction}
+\end{figure}
 
 \subsubsection*{Separation Logic Rules}
-Some core proof rules for the language without functions are:
 
+\begin{figure}
 \begin{mathpar}
 \inferrule*[right=\textsc{assign}]
   {x \notin \pv(E')}
@@ -315,12 +325,43 @@ Some core proof rules for the language without functions are:
   {\triple{P_1}{C}{Q} \\ \triple{P_2}{C}{Q}}
   {\triple{P_1 \lor P_2}{C}{Q}}
 \end{mathpar}
+\caption{Separation Logic Rules}
+\label{rules}
+\end{figure}
 
-\subsubsection*{Soundness of Separation Logic}
+So far \cref{satisfaction} defines the programs that satisfy a separation logic
+Hoare triple.
+Now we define how to derive such triples from program syntax in \cref{rules}. 
+
+The soundness condition defined in \cref{soundness} guarantees that the derivation rules are
+correct (the proof is omitted here). 
+
+\begin{figure}
+      
 \[
-\vdash \{P\} C \{Q\} \Rightarrow \models \{P\} C \{Q\}
+\begin{aligned}[t]
+\forall P, C, Q, e, s, h.&
+\vdash \{P\}\ C\ \{Q\}
+\Longrightarrow e, s, h \models P \\
+& \Longrightarrow
+\left(
+  \neg\bigl((s,h), C \Downarrow \lightning\bigr)
+  \land
+  \left(
+    \forall s', h'.\ 
+    (s,h), C \Downarrow (s',h')
+    \Longrightarrow e, s', h' \models Q
+  \right)
+\right)
+\end{aligned}
 \]
+\caption{Soundness of Separation Logic}
+\label{soundness}
+\end{figure}
 
-\
+It says if we can infer Hoare triple $\vdash \{P\}\ C\ \{Q\}$ from the program
+$C$, then whenever we run the $C$ with a state $s, h$ that satisfies the
+precodition $P$, after executing the command $C$ the outcome states $s', h'$
+satisfies the postcondition $Q$.
 
 \end{document}

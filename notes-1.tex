@@ -14,6 +14,8 @@
 \usepackage{hyperref}
 \usepackage{cleveref}
 \usepackage{stmaryrd}
+\usepackage[OT1]{fontenc}
+\usepackage{utilities}
 
 \providecommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
 \makeatletter
@@ -184,6 +186,96 @@ Instead of describing the entire heap, a formula in separation logic describes o
 With this separating connective, we can extend the specification in a compositional way, without needing to write extra formulae that assert the separations.
 
 \textbf{Note.} The separating conjunction operator bears superficial resemblance to the disjoint union; however, where the disjoint union re-indexes members of sets to reconcile intersection, the separating conjunction operator enforces that the two operands are disjoint.
+
+\subsubsection*{Case Study: The While Language}
+
+We'll use a small imperative language to show how separation logic allows for meaningful a meaningful specification that talks about how the heap resource is managed.\\
+
+\begin{figure}[H]
+\centering
+\begin{alignat*}{3}
+\textbf{\textcolor{red}{Boolean Values}} &\quad b \in Bool &&\on{def}{=} \{true,false \}\\
+\textbf{\textcolor{red}{Values}}&\quad v \in Val && \on{def}{=} \mathbb{N} \cup Bool \cup \{ null \} \\
+\textbf{\textcolor{red}{Program Variables}}&\quad x \in Var &&  \\
+\textbf{\textcolor{red}{Simple Expressions}}&\quad E \in Exp && ::= v \mid x \mid E+E \mid E - E \mid E \times E \mid E / E \dots \\
+\end{alignat*}
+\caption{Expressions of the While Language}
+\label{fig:while_e}
+\end{figure}
+
+The expression language defined in Figure \ref{fig:while_e} is left underspecified so that it can later be extended. While Figure \ref{fig:while_c} uses $[E]$ to denote a value stored at the heap cell pointed by the value of the expression $E$, and $\vec{E}$ to denote the arguments of a function.
+
+\begin{figure}[H]
+\label{fig:while_c}
+\centering
+\begin{grammar}{\textbf{C}}
+  \mathbf{x} := E                  \desc{assignment}    \alt
+  \mathbf{x} := [E]                \desc{lookup}        \alt
+  [E] := E                         \desc{mutation}      \alt
+  \mathbf{x} := \text{new}(E)      \desc{allocation}    \alt
+  \text{dispose}(E)                \desc{deallocation}  \alt
+  \text{skip}                      \desc{skip}          \alt
+  C ; C                            \desc{sequential composition} \alt
+  \text{if } (E)\ C \text{ else } C \desc{if}           \alt
+  \text{while } (E)\ C             \desc{while}         \alt
+  y := f(\vec{E})                  \desc{function call}
+\end{grammar}
+\caption{Commands of the While Language}
+\end{figure}
+
+
+\subsubsection*{Program State Notation}
+
+Figure \ref{fig:pst} brings into scope the Variable Store and the Linear Heap. Finally, we introduce the \textbf{\textcolor{red}{notations}}:
+
+\begin{itemize}
+	\item $\emptyset \in \text{Store}$ for the empty store.
+	\item $x[x \mapsto v]$ for the Store $s$ with $x$ updated by $v$.\\
+	\item $\emptyset \in \text{Heap}$ for the empty heap.
+	\item $h1 \uplus h2$ for the union of the disjoint heaps $h_1$ and $h_2$.
+	\item $\mathcal{E}\denotation{E}_{s} \in Val$ for the value of the expression $E$ with respect to the variable store $s$.
+	\item $\gamma(f) = (\vec{x},C,E)$ for the \textbf{\textcolor{red}{Function Definition Context}} which maps function identifiers to their implementations.
+	\item $f(\vec{x})\{C;return\ E\} \in \gamma$ for $\gamma(f) = (\vec{x},C,E)$
+	\item $(s,h),C \downarrow_\gamma (s',h')$ for the usual big step operational semantics which states that under the store $s$ and the heap $h$, if $C$ is executed, does not abort, and terminates, it produces a new state $(s',h')$.
+	\item $[E]$ for the contents of the storage at the address given by the expression $E$.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{alignat*}{3}
+\textbf{\textcolor{red}{Variable Store}} &\quad s \in \text{Store} &&\on{def}{=} Var \rightharpoonup_{fin} Val\\
+\textbf{\textcolor{red}{Linear Heap}}&\quad h \in \text{Heap} && \on{def}{=} \mathbb{N} \rightharpoonup_{fin} Val \\
+\textbf{\textcolor{red}{State}}&\quad \sigma \in \text{State} && \on{def}{=} \text{Store} \times \text{Heap}  \\
+\end{alignat*}
+\caption{Program State}
+\label{fig:pst}
+\end{figure}
+
+\subsubsection*{Syntax of Separation Logic Assertions}
+\textbf{Assertions.}
+The set of \emph{assertions}, $\Assert$, ranged over by
+$P, P_1, Q, Q_1, \ldots$, is defined by:
+
+\[
+\begin{array}{rcl@{\qquad}l}
+P \in \Assert & ::= &
+P \land P \mid P \Rightarrow P \mid \True \mid \False
+& \text{classical connectives} \\
+& \mid &
+E = E \mid E > E \mid E \in X \mid \cdots
+& \text{boolean assertions} \\
+& \mid &
+\exists x.\ P
+& \text{quantification} \\
+& \mid &
+P \star P \mid P \sepimp P \mid \Emp
+\mid \displaystyle\mathop{\circledast}_{E_1 \le x < E_2} P
+& \text{separating connectives} \\
+& \mid &
+E \mapsto E
+& \text{cell assertion}
+\end{array}
+\]
 
 \subsection{Syntax of Separation Logic Assertions}
 \textbf{Assertions.}
@@ -357,7 +449,7 @@ Now we define how to derive such triples from program syntax in \cref{rules}.
 The soundness condition defined in \cref{soundness} guarantees that the derivation rules are
 correct (the proof is omitted here). 
 
-\begin{figure}
+\begin{figure}[H]
       
 \[
 \begin{aligned}[t]
@@ -383,27 +475,26 @@ correct (the proof is omitted here).
 It says if we can infer Hoare triple $\vdash \{P\}\ C\ \{Q\}$ from the program
 $C$, then whenever we run the $C$ with a state $s, h$ that satisfies the
 precodition $P$, after executing the command $C$ the outcome states $s', h'$
-satisfies the postcondition $Q$.
+satisfies the postcondition $Q$.\\
 
 
 
-\subsection{Example: Proof sketch for \texorpdfstring{$\LLen$}{LLen}}
+\subsection{Example: Proof sketch for \texorpdfstring{$\LLen$}{LLen} to compute the length of a list}
 
 {\small
 \[
 \begin{array}{@{}l@{}}
-\vdash\quad \blueassn{\{x = x \star \List(x,\alpha)\}} \\[-0.2ex]
+\vdash\quad \blueassn{\{\text{x} = x \star \List(x,\alpha)\}} \\[-0.2ex]
 \LLen(x)\ \{ \\
 \quad \text{\textcolor{red}{// Initialise the local variables and ensure the Boolean condition is evaluable.}} \\
-\quad \blueassn{\{x = x \star \List(x,\alpha) \star n,t = \Null\}} \\
-\quad \blueassn{\{x = x \star \List(x,\alpha) \star n,t = \Null
-  \star (x = \Null) \in \Bool\}} \\
+\quad \blueassn{\{\text{x} = x \star \List(x,\alpha) \star \text{n,t} = \Null\}} \\
+\quad \blueassn{\{\text{x} = x \star \List(x,\alpha) \star \text{n,t} = \Null
+  \star (\text{x} = \Null) \in \Bool\}} \\
 \quad \mathsf{if}\ (x = \Null)\ \{ \\
-\qquad \blueassn{\{x = x \star \List(x,\alpha) \star n,t = \Null
-  \star x = \Null\}} \\
+\qquad \blueassn{\{\text{x} = x \star \List(x,\alpha) \star \text{n,t,x} = \Null\}} \\
 \qquad \text{\textcolor{red}{// Since x = null, unfold the list predicate to get the base case.}} \\
-\qquad \blueassn{\{x = x \star (x = \Null \star \alpha = [\,])
-  \star n,t = \Null\}} \\
+\qquad \blueassn{\{\text{x} = x \star (\text{x} = \Null \star \alpha = [\,])
+  \star \text{n,t} = \Null\}} \\
 \qquad n := 0 \\
 \qquad \blueassn{\{x = x \star (x = \Null \star \alpha = [\,])
   \star t = \Null \star n = 0\}} \\
@@ -411,7 +502,7 @@ satisfies the postcondition $Q$.
 \qquad \blueassn{\{(x = \Null \star \alpha = [\,]) \star n = |\alpha|\}} \\
 \qquad \blueassn{\{\List(x,\alpha) \star n = |\alpha|\}} \\
 \quad \}\ \mathsf{else}\ \{ \\
-\qquad \blueassn{\{x = x \star \List(x,\alpha) \star n,t = \Null
+\qquad \blueassn{\{\text{x} = x \star \List(x,\alpha) \star n,t = \Null
   \star x \ne \Null\}} \\
 \qquad \text{\textcolor{red}{// Unfold the list predicate to the recursive case and identify the resource needed.}} \\
 \qquad \blueassn{\{\exists v,\beta,y.\ x \mapsto v,y
@@ -431,10 +522,17 @@ satisfies the postcondition $Q$.
   \star \alpha = v{:}\beta \star \List(y,\beta) \star n = |\beta| + 1\}} \\
 \qquad \blueassn{\{\List(x,\alpha) \star n = |\alpha|\}} \\
 \quad \} \\
-\}
+\quad \text{\textcolor{red}{// As the post-condition of both the if and else bodies are the same,}} \\
+\quad \text{\textcolor{red}{// we infer the post-condition of the conditional statement.}} \\
+\quad \blueassn{\{\List(x,\alpha) \star n = |\alpha|\}} \\
+\quad \text{return n}\\
+\}\\
+\blueassn{\{\List(x,\alpha) \star ret = |\alpha|\}} \\
 \end{array}
 \]
 }
+
+
 
 
 \end{document}

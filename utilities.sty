@@ -1,0 +1,135 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{utilities}
+
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{xcolor}
+\RequirePackage{mathtools}
+\RequirePackage{stmaryrd}
+\RequirePackage{ebproof}
+\RequirePackage{expl3}
+
+
+
+% --- Custom Color Definitions ---
+\definecolor{commentred}{RGB}{220, 50, 47}    % Red for comments
+\definecolor{assertblue}{RGB}{38, 139, 210}   % Blue for assertions
+\definecolor{blue}{RGB}{7, 44, 230}
+
+% --- Custom Command Shortcuts ---
+\newcommand{\comment}[1]{\textcolor{red}{// #1}}
+\newcommand{\assert}[1]{\textcolor{blue}{\{#1\}}}
+\newcommand{\starop}{\star} % Separation logic star
+\newcommand{\entails}{\vdash} 
+\newcommand{\Entails}{\vDash}
+\newcommand{\denotation}[1]{\llbracket #1 \rrbracket}
+
+\newcommand{\hoareT}[3]{\textcolor{blue}{\{#1\}}\ #2 \textcolor{blue}{\{#3\}} }
+
+
+
+\NewDocumentEnvironment{grammar}{m b}{
+\begin{alignat*}{3} #1 &::=\ && #2 
+\end{alignat*}
+}
+
+
+\newcommand{\alt}{\\ &\mid &&}
+
+\newcommand{\desc}[1]{\qquad &\text{(#1)}}
+
+% over{symbol}{x} draws symbol over x
+%\newcommand{\on}[2]{\stackrel{\mathclap{#1}}{#2}}
+\newcommand{\on}[2]{\mathrel{\overset{#1}{#2} }}
+
+
+\newcommand{\den}[1]{\llbracket #1 \rrbracket}
+\newcommand{\reduces}{\Downarrow}
+
+\newcommand{\tip}[1]{\mathrel{-\mkern-6mu#1}}
+\newcommand{\startip}{\tip{\star}}
+
+
+\ExplSyntaxOn
+% Create a token list variable to store the generated table rows
+\tl_new:N \g_numtable_rows_tl
+
+\NewDocumentCommand{\makenumbertable}{m}
+  {
+    % Clear any existing rows in the token list
+    \tl_gclear:N \g_numtable_rows_tl
+    
+    % Loop from 1 up to the input number (#1)
+    \int_step_inline:nn {#1}
+      {
+        % Append the current number and a newline sequence to the token list
+        \tl_gput_right:Nn \g_numtable_rows_tl { $##1$ \\ }
+      }
+      
+    % Output the tabular environment filled with the saved rows
+    \begin{tabular}{l}
+      \g_numtable_rows_tl
+    \end{tabular}
+  }
+\ExplSyntaxOff
+
+\newcounter{tabcounter}
+\setcounter{tabcounter}{0}
+\newcommand{\createNewSideBarBox}{
+  \expandafter\newbox\csname sideBarBox\thetabcounter\endcsname%
+}
+
+\newcounter{contentcounter}
+\setcounter{contentcounter}{0}
+\newcommand{\createNewContentBox}{
+  \expandafter\newbox\csname contentBox\thecontentcounter\endcsname%
+}
+
+\newcommand{\commentBlock}[2]{
+\edef\ctc{\thecontentcounter}
+\createNewContentBox
+\expandafter\sbox{\csname contentBox\ctc\endcsname}{#2}
+
+
+\edef\ftc{\thetabcounter}
+\createNewSideBarBox
+\expandafter\sbox{\csname sideBarBox\ftc\endcsname}{
+    \begin{tabular}{l|}
+        \vphantom{{\rotatebox[origin=c]{90}{\footnotesize #1 123}} \expandafter\usebox{\csname contentBox\ctc\endcsname}  }
+        \smash{\rotatebox[origin=c]{90}{\footnotesize #1}} 
+    \end{tabular}
+}
+\expandafter\usebox{\csname sideBarBox\ftc\endcsname}
+%\expandafter\usebox{\csname contentBox\ctc\endcsname} 
+#2
+\stepcounter{tabcounter}
+\stepcounter{contentcounter}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\newcommand{\tab}{\quad}
+
+\newcounter{linecounter}
+\setcounter{linecounter}{0}
+\newcommand{\crlf}{\thelinecounter \stepcounter{linecounter} &}
+
+
+
+\newenvironment{ntabular}[2][0]{
+\setcounter{linecounter}{#1}
+\begin{tabular}{c #2}
+
+}{\end{tabular}}
+

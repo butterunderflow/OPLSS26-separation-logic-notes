@@ -1,0 +1,189 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage[top=0.75in, bottom=1.75in, left=1in, right=1in,includefoot]
+{geometry}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage[math]{blindtext}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathpartir}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{stmaryrd}
+\usepackage[OT1]{fontenc}
+\usepackage{utilities}
+\usepackage{relsize}
+
+
+\providecommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
+\makeatletter
+\@addtoreset{figure}{section}
+\makeatother
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\newcommand{\List}{\mathsf{List}}
+\newcommand{\LDispose}{\mathsf{LDispose}}
+\newcommand{\LLen}{\mathsf{LLen}}
+\newcommand{\reach}{\mathsf{reach}}
+\newcommand{\Assert}{\mathsf{Assert}}
+\newcommand{\True}{\mathsf{True}}
+\newcommand{\False}{\mathsf{False}}
+\newcommand{\Emp}{\mathsf{emp}}
+\newcommand{\sepimp}{\mathrel{-\mkern-6mu\ast}}
+\newcommand{\Eval}[1]{\mathcal{E}[\![#1]\!]_{e,s}}
+\newcommand{\Val}{\mathsf{Val}}
+\newcommand{\Heap}{\mathsf{Heap}}
+\newcommand{\Pred}{\mathsf{pred}}
+\newcommand{\pv}{\mathsf{pv}}
+\newcommand{\Mod}{\mathsf{mod}}
+\newcommand{\Bool}{\mathsf{Bool}}
+\newcommand{\Var}{\mathsf{Var}}
+\newcommand{\Exp}{\mathsf{Exp}}
+\newcommand{\Null}{\mathsf{null}}
+\newcommand{\blueassn}[1]{\textcolor{blue}{#1}}
+\newcommand{\triple}[3]{\vdash\ \blueassn{\{#1\}}\ #2\ \blueassn{\{#3\}}}
+\newcommand*{\defeq}{\mathrel{\vcenter{\baselineskip0.5ex \lineskiplimit0pt
+                     \hbox{\scriptsize.}\hbox{\scriptsize.}}}%
+                     =}
+\newcommand*{\ddefeq}{\mathrel{\vcenter{\baselineskip0.5ex \lineskiplimit0pt
+                     \hbox{\scriptsize.}\hbox{\scriptsize.}}}%
+                      \mathrel{\vcenter{\baselineskip0.5ex \lineskiplimit0pt
+                     \hbox{\scriptsize.}\hbox{\scriptsize.}}}
+                     =\ }
+
+
+\pagestyle{fancy}
+\fancyhead[L]{\fancyhdrbox[c]{\Large \slshape \sffamily 
+Separation Logic and Compositional Symbolic Execution:\\
+Verification and Bug Detection at Scale}}
+\fancyhead[C]{}
+\fancyhead[R]{\large \sffamily \bfseries Philippa Gardner}
+\fancyfoot[L]{\fancyhdrbox[b]{\sffamily \small Compiled By: \\ 
+\normalsize \sffamily Dinghong Zhong, Samuel Dodson, Daniel Pinto}}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\fancyhdrbox[b]{\includegraphics[width=1in]{oplssLogo.png}}}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\fancypagestyle{plain}{
+\fancyhf{}
+\fancyfoot[L]{\fancyhdrbox[b]{\sffamily \small Compiled By: \\ 
+Dinghong Zhong, Samuel Dodson, Daniel Andres Pinto Alvarado}}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2ex}
+\setlength{\headheight}{1.25in}
+\setlength{\footskip}{32pt}
+\begin{document}
+
+\thispagestyle{plain}
+\begin{center}
+\includegraphics[width=3in]{oplssLogo.png}\\
+\sffamily \LARGE \slshape 
+Separation Logic and Compositional Symbolic Execution:\\
+Verification and Bug Detection at Scale\\[2ex]
+\upshape Philippa Gardner\\[2ex]
+\large Lecture 2 - \slshape June 25, 2026
+\end{center}
+
+This is the notes for the secobd lecture of the OPLSS 2026 course on Separation
+Logic and Compositional Symbolic Execution, taught by Philippa Gardner. 
+
+\section{Describing Structtures Beyond Classic Linked Lists}
+
+Separation logic also allows us to describe complex structures, such as N-arty trees:
+
+\begin{alignat*}{3}
+tree(x,c) &\quad \on{def}{=}\quad && (x \mapsto 0,\_ \star c = 1)\\
+&\quad \quad && \vee \left(\exists\   n > 1, \vec{p}, \vec{c}. x \mapsto n \star c = \sum_{i = 1}^n c_i \star P(n,c) \right)\\
+P(n,c) &\quad = \quad &&  \bigcircledast_{1 \leq i \leq n} (x+i \mapsto p_i \star tree(p_i,c_i) \wedge 1 \leq c_i \leq c) )
+\end{alignat*}
+
+The predicate $tree(x,c)$ describes a tree $x$ with $c$ total cells used by either constructing a leaf with value $0$ (and an empty box for uniformtiy), or by stablishing what the head $x$ is pointing to, and ensuring we have enough space for each of the children ($c_i$) and describing them recutrsively.
+
+
+An example of an N-ary Tree described by the specification is the one portrayed in Figure \ref{fig:ntree}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  cellnode/.style={draw, minimum width=0.8cm, minimum height=0.7cm,
+                   anchor=center, inner sep=0pt, font=\large},
+  >=Stealth
+]
+ 
+% Root node (3 cells): value | left pointer | right pointer
+\matrix (root) [matrix of nodes, nodes={cellnode},
+                column sep=-\pgflinewidth, row sep=0pt]
+  at (0,0) {2 & $\bullet$ & $\bullet$ \\};
+ 
+% Left child of root (3 cells)
+\matrix (left) [matrix of nodes, nodes={cellnode},
+                column sep=-\pgflinewidth, row sep=0pt]
+  at (-3,-3) {2 & $\bullet$ & $\bullet$ \\};
+ 
+% Right child of root (2 cells: leaf)
+\matrix (right) [matrix of nodes, nodes={cellnode},
+                 column sep=-\pgflinewidth, row sep=0pt]
+  at (3,-3) {0 & $-$ \\};
+ 
+% Leaves under "left"
+\matrix (leaf1) [matrix of nodes, nodes={cellnode},
+                 column sep=-\pgflinewidth, row sep=0pt]
+  at (-4.5,-6) {0 & $-$ \\};
+ 
+\matrix (leaf2) [matrix of nodes, nodes={cellnode},
+                 column sep=-\pgflinewidth, row sep=0pt]
+  at (-1.5,-6) {0 & $-$ \\};
+ 
+% Incoming arrow labeled E_x
+\node (Ex) at (-0.4,1.7) {$E_x$};
+\draw[->] (Ex.south) -- (root-1-1.north east);
+ 
+% Root's two pointers
+\draw[->] (root-1-2.south) to[out=-90, in=90] (left-1-1.north);
+\draw[->] (root-1-3.south) to[out=-90, in=90] (right-1-1.north);
+ 
+% Left child's two pointers
+\draw[->] (left-1-2.south) to[out=-90, in=90] (leaf1-1-1.north);
+\draw[->] (left-1-3.south) to[out=-90, in=90] (leaf2-1-1.north);
+ 
+\end{tikzpicture}
+\label{fig:ntree}
+\caption{N-ary Tree}
+\end{figure}
+
+Following the same schema, we could also define Hasht Tables, Doubly Linked Lists, Collections-C linked lists, $\dots$
+
+\section{Formalizing Proof Sketches}
+
+In the previous lecture we saw how we could describe informally the behaviour of a program, such as \verb!LLen! (which comptuted the length of a linked list recursively) via Hoare Triplets with pre and post conditions encoded in separation logic. But how can we reason about the program in a formal way?
+
+For that, we'll use the proof rules defined in Figure to do proof derivations.
+
+\begin{figure}[H]
+\[
+\begin{prooftree}
+\hypo{\vdash \hoareT{P}{C}{Q}}
+\hypo{mod(C) \cap fv(R) = \emptyset}
+\infer2[frame]{\vdash \hoareT{P \star R}{C}{Q \star R}}
+\end{prooftree}
+\qquad 
+\begin{prooftree}
+\hypo{\models P \Rightarrow P'}
+\hypo{\vdash \hoareT{P'}{C}{Q'}}
+\hypo{\models Q' \Rightarrow Q}
+\infer3[cons]{\hoareT{P}{C}{Q}}
+\end{prooftree}
+\]
+\label{fig:proof_rules}
+\caption{Proof rules for reasoning about Hoare Triplets}
+\end{figure}
+
+ 
+
+
+\end{document}

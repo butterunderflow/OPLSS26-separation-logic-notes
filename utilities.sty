@@ -8,7 +8,8 @@
 \RequirePackage{stmaryrd}
 \RequirePackage{ebproof}
 \RequirePackage{expl3}
-
+\RequirePackage{tikz}
+\usetikzlibrary{matrix, arrows.meta}
 
 
 % --- Custom Color Definitions ---
@@ -24,7 +25,8 @@
 \newcommand{\Entails}{\vDash}
 \newcommand{\denotation}[1]{\llbracket #1 \rrbracket}
 
-\newcommand{\hoareT}[3]{\textcolor{blue}{\{#1\}}\ #2 \textcolor{blue}{\{#3\}} }
+\newcommand{\hoareT}[3]{\textcolor{blue}{\{#1\}}\ #2\ \textcolor{blue}{\{#3\}} }
+\newcommand{\bigcircledast}{\mathop{\scalebox{1.5}{$\circledast$}}}
 
 
 

@@ -35,10 +35,11 @@
 \newcommand{\Val}{\mathsf{Val}}
 \newcommand{\Heap}{\mathsf{Heap}}
 \newcommand{\Pred}{\mathsf{pred}}
-\newcommand{\true}{\mathsf{true}}
 \newcommand{\pv}{\mathsf{pv}}
 \newcommand{\Mod}{\mathsf{mod}}
 \newcommand{\Bool}{\mathsf{Bool}}
+\newcommand{\Var}{\mathsf{Var}}
+\newcommand{\Exp}{\mathsf{Exp}}
 \newcommand{\Null}{\mathsf{null}}
 \newcommand{\blueassn}[1]{\textcolor{blue}{#1}}
 \newcommand{\triple}[3]{\vdash\ \blueassn{\{#1\}}\ #2\ \blueassn{\{#3\}}}
@@ -194,10 +195,10 @@ We'll use a small imperative language to show how separation logic allows for me
 \begin{figure}[H]
 \centering
 \begin{alignat*}{3}
-\textbf{\textcolor{red}{Boolean Values}} &\quad b \in Bool &&\on{def}{=} \{true,false \}\\
-\textbf{\textcolor{red}{Values}}&\quad v \in Val && \on{def}{=} \mathbb{N} \cup Bool \cup \{ null \} \\
-\textbf{\textcolor{red}{Program Variables}}&\quad x \in Var &&  \\
-\textbf{\textcolor{red}{Simple Expressions}}&\quad E \in Exp && ::= v \mid x \mid E+E \mid E - E \mid E \times E \mid E / E \dots \\
+\textbf{\textcolor{red}{Boolean Values}} &\quad b \in \Bool &&\on{def}{=} \{\True,\False \}\\
+\textbf{\textcolor{red}{Values}}&\quad v \in \Val && \on{def}{=} \mathbb{N} \cup \Bool \cup \{ \Null \} \\
+\textbf{\textcolor{red}{Program Variables}}&\quad x \in \Var &&  \\
+\textbf{\textcolor{red}{Simple Expressions}}&\quad E \in \Exp && ::= v \mid x \mid E+E \mid E - E \mid E \times E \mid E / E \dots \\
 \end{alignat*}
 \caption{Expressions of the While Language}
 \label{fig:while_e}
@@ -233,7 +234,7 @@ Figure \ref{fig:pst} brings into scope the Variable Store and the Linear Heap. F
 	\item $x[x \mapsto v]$ for the Store $s$ with $x$ updated by $v$.\\
 	\item $\emptyset \in \text{Heap}$ for the empty heap.
 	\item $h1 \uplus h2$ for the union of the disjoint heaps $h_1$ and $h_2$.
-	\item $\mathcal{E}\denotation{E}_{s} \in Val$ for the value of the expression $E$ with respect to the variable store $s$.
+	\item $\mathcal{E}\denotation{E}_{s} \in \Val$ for the value of the expression $E$ with respect to the variable store $s$.
 	\item $\gamma(f) = (\vec{x},C,E)$ for the \textbf{\textcolor{red}{Function Definition Context}} which maps function identifiers to their implementations.
 	\item $f(\vec{x})\{C;return\ E\} \in \gamma$ for $\gamma(f) = (\vec{x},C,E)$
 	\item $(s,h),C \downarrow_\gamma (s',h')$ for the usual big step operational semantics which states that under the store $s$ and the heap $h$, if $C$ is executed, does not abort, and terminates, it produces a new state $(s',h')$.
@@ -243,8 +244,8 @@ Figure \ref{fig:pst} brings into scope the Variable Store and the Linear Heap. F
 \begin{figure}[H]
 \centering
 \begin{alignat*}{3}
-\textbf{\textcolor{red}{Variable Store}} &\quad s \in \text{Store} &&\on{def}{=} Var \rightharpoonup_{fin} Val\\
-\textbf{\textcolor{red}{Linear Heap}}&\quad h \in \text{Heap} && \on{def}{=} \mathbb{N} \rightharpoonup_{fin} Val \\
+\textbf{\textcolor{red}{Variable Store}} &\quad s \in \text{Store} &&\on{def}{=} \Var \rightharpoonup_{fin} \Val\\
+\textbf{\textcolor{red}{Linear Heap}}&\quad h \in \text{Heap} && \on{def}{=} \mathbb{N} \rightharpoonup_{fin} \Val \\
 \textbf{\textcolor{red}{State}}&\quad \sigma \in \text{State} && \on{def}{=} \text{Store} \times \text{Heap}  \\
 \end{alignat*}
 \caption{Program State}
@@ -325,11 +326,11 @@ e, s, h \models \True
 e, s, h \models \False
   &\Longleftrightarrow \text{never} \\
 e, s, h \models E_1 = E_2
-  &\Longleftrightarrow (\Eval{E_1 = E_2} = \true) \land h = \emptyset \\
+  &\Longleftrightarrow (\Eval{E_1 = E_2} = \True) \land h = \emptyset \\
 e, s, h \models E_1 > E_2
-  &\Longleftrightarrow (\Eval{E_1 > E_2} = \true) \land h = \emptyset \\
+  &\Longleftrightarrow (\Eval{E_1 > E_2} = \True) \land h = \emptyset \\
 e, s, h \models E \in X
-  &\Longleftrightarrow (\Eval{E \in X} = \true) \land h = \emptyset \\
+  &\Longleftrightarrow (\Eval{E \in X} = \True) \land h = \emptyset \\
 e, s, h \models \exists x.\ P
   &\Longleftrightarrow \exists v \in \Val.\ e[x \mapsto v], s, h \models P \\[1ex]
 {\color{blue} e, s, h \models P_1 \star P_2}

@@ -22,6 +22,7 @@
 \renewcommand{\thefigure}{\thesection.\arabic{figure}}
 \newcommand{\List}{\mathsf{List}}
 \newcommand{\LDispose}{\mathsf{LDispose}}
+\newcommand{\LLen}{\mathsf{LLen}}
 \newcommand{\reach}{\mathsf{reach}}
 \newcommand{\Assert}{\mathsf{Assert}}
 \newcommand{\True}{\mathsf{True}}
@@ -70,6 +71,7 @@ Dinghong Zhong, Samuel Dodson, Daniel Andres Pinto Alvarado}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{2ex}
 \setlength{\headheight}{1.25in}
+\setlength{\footskip}{32pt}
 \begin{document}
 
 \thispagestyle{plain}
@@ -379,5 +381,57 @@ It says if we can infer Hoare triple $\vdash \{P\}\ C\ \{Q\}$ from the program
 $C$, then whenever we run the $C$ with a state $s, h$ that satisfies the
 precodition $P$, after executing the command $C$ the outcome states $s', h'$
 satisfies the postcondition $Q$.
+
+
+
+\subsection{Example: Proof sketch for \texorpdfstring{$\LLen$}{LLen}}
+
+{\small
+\[
+\begin{array}{@{}l@{}}
+\vdash\quad \blueassn{\{x = x \star \List(x,\alpha)\}} \\[-0.2ex]
+\LLen(x)\ \{ \\
+\quad \text{\textcolor{red}{// Initialise the local variables and ensure the Boolean condition is evaluable.}} \\
+\quad \blueassn{\{x = x \star \List(x,\alpha) \star n,t = \Null\}} \\
+\quad \blueassn{\{x = x \star \List(x,\alpha) \star n,t = \Null
+  \star (x = \Null) \in \Bool\}} \\
+\quad \mathsf{if}\ (x = \Null)\ \{ \\
+\qquad \blueassn{\{x = x \star \List(x,\alpha) \star n,t = \Null
+  \star x = \Null\}} \\
+\qquad \text{\textcolor{red}{// Since x = null, unfold the list predicate to get the base case.}} \\
+\qquad \blueassn{\{x = x \star (x = \Null \star \alpha = [\,])
+  \star n,t = \Null\}} \\
+\qquad n := 0 \\
+\qquad \blueassn{\{x = x \star (x = \Null \star \alpha = [\,])
+  \star t = \Null \star n = 0\}} \\
+\qquad \text{\textcolor{red}{// Forget x and t, connect n to alpha, and fold the list predicate.}} \\
+\qquad \blueassn{\{(x = \Null \star \alpha = [\,]) \star n = |\alpha|\}} \\
+\qquad \blueassn{\{\List(x,\alpha) \star n = |\alpha|\}} \\
+\quad \}\ \mathsf{else}\ \{ \\
+\qquad \blueassn{\{x = x \star \List(x,\alpha) \star n,t = \Null
+  \star x \ne \Null\}} \\
+\qquad \text{\textcolor{red}{// Unfold the list predicate to the recursive case and identify the resource needed.}} \\
+\qquad \blueassn{\{\exists v,\beta,y.\ x \mapsto v,y
+  \star \alpha = v{:}\beta \star \List(y,\beta) \star n,t = \Null\}} \\
+\qquad \text{\textcolor{red}{// Use frame, consequence, and the recursive-call rule.}} \\
+\qquad \blueassn{\{x \mapsto v,y \star \List(y,\beta) \star n,t = \Null\}} \\
+\qquad t := [x + 1] \\
+\qquad \blueassn{\{x \mapsto v,y \star \List(y,\beta)
+  \star n = \Null \star t = y\}} \\
+\qquad n := \LLen(t) \\
+\qquad \blueassn{\{x \mapsto v,y \star \List(y,\beta) \star n = |\beta|\}} \\
+\qquad n := n + 1 \\
+\qquad \blueassn{\{x \mapsto v,y \star \List(y,\beta)
+  \star n = |\beta| + 1\}} \\
+\qquad \text{\textcolor{red}{// Frame back assertions, add existentials, and fold back the list predicate.}} \\
+\qquad \blueassn{\{\exists v,\beta,y.\ x \mapsto v,y
+  \star \alpha = v{:}\beta \star \List(y,\beta) \star n = |\beta| + 1\}} \\
+\qquad \blueassn{\{\List(x,\alpha) \star n = |\alpha|\}} \\
+\quad \} \\
+\}
+\end{array}
+\]
+}
+
 
 \end{document}

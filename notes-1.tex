@@ -118,7 +118,7 @@ LDispose(x) {
 the Hoare triple we can prove is:
 
 $$
-\vdash \{ \List(x) \} \LDispose(x) \{ x = null \}
+\vdash \{ \List(x) \} \LDispose(x) \{ x = \Null \}
 $$
 
 which means if $x$ points to a valid list before executing $\LDispose$, then
@@ -127,13 +127,13 @@ after executing $\LDispose$, $x$ will be null.
 However, Hoare logic has scalability issues in a sense that it does not provide
 a clear and simple way to extend already proven specifications with richer assertions.
 
-For example, suppose we have proved the Hoare triple $\vdash \{ \List(x) \} \LDispose(x) \{ x = null \}$. 
+For example, suppose we have proved the Hoare triple $\vdash \{ \List(x) \} \LDispose(x) \{ x = \Null \}$. 
 How can we apply it to conclude the postcondition after executing $\LDispose$ in a program state that contains another $\List(y)$?
 
 With a simple glance, the precondition is $\List(x) \land \List(y)$, and the
-postcondition should be $x = null \land \List(y)$.
+postcondition should be $x = \Null \land \List(y)$.
 But this is not necessarily true, because $x$ and $y$ could alias!
-We can conclude that $x = null$, but we cannot say anything about $y$ with certainty.
+We can conclude that $x = \Null$, but we cannot say anything about $y$ with certainty.
 
 To make the specification describe the program correctly and precisely, we need
 to use a more complex assertion that describes the separation of the two lists
@@ -141,32 +141,32 @@ in the precondition:
 
 $$
 (\List(x) \land \List(y)) \land
-(\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = null)
+(\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = \Null)
 $$
 
-The $\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = null$ part of
+The $\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = \Null$ part of
 the assertion says that the two lists $x$ and $y$ are separated, i.e., they do
 not share any common nodes.
 
-Only then can we conclude the postcondition $x = null \land \List(y)$.
+Only then can we conclude the postcondition $x = \Null \land \List(y)$.
 
 If we have three lists $x$, $y$ and $z$, our precondition grows:
 
 $$
 \begin{array}{l}
 (\List(x, \alpha) \land \List(y, \beta)) \\
-\land\;(\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = null) \\
+\land\;(\forall u.\ \reach(x, u) \land \reach(y, u) \Rightarrow u = \Null) \\
 \land\;\List(z) \\
 \land\;(\forall u.\ \reach(z, u) \land (\reach(x, u) \lor \reach(y, u))
-  \Rightarrow u = null)\,,
+  \Rightarrow u = \Null)\,,
 \end{array}
 $$
 
 as does the postcondition:
 
 $$
-x = null \land \List(y) \land \List(z) \land 
-(\forall u.\ \reach(z, u) \land \reach(y, u) \Rightarrow u = null)\, .
+x = \Null \land \List(y) \land \List(z) \land 
+(\forall u.\ \reach(z, u) \land \reach(y, u) \Rightarrow u = \Null)\, .
 $$
 
 This approach does not scale; not only is it unclear where to add the separation assertion, but when we add more separation assertions, the complexity of the condition grows quadratically (as does the time needed to solve them).

@@ -10,6 +10,7 @@
 \usepackage{float}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{mathpartir}
 \usepackage[hidelinks]{hyperref}
 
 \providecommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
@@ -203,158 +204,123 @@ E \mapsto E
 
 \subsubsection*{Meaning of Separation Logic Assertions}
 What kind of program states does an assertion describe?
-The meaning of the main assertion forms is given by the satisfaction relation
-$e, s, h \models P$:
+The meaning of the main assertion forms is given by the satisfaction relation $e, s, h \models P$\,:
 
-{\small
-\[
-\begin{array}{rcl}
+\begin{align*}
 e, s, h \models P_1 \land P_2
-& \Longleftrightarrow &
-e, s, h \models P_1 \land e, s, h \models P_2 \\
+  &\Longleftrightarrow e, s, h \models P_1 \land e, s, h \models P_2 \\
 e, s, h \models P_1 \Rightarrow P_2
-& \Longleftrightarrow &
-e, s, h \models P_1 \Rightarrow e, s, h \models P_2 \\
+  &\Longleftrightarrow e, s, h \models P_1 \Rightarrow e, s, h \models P_2 \\
 e, s, h \models \True
-& \Longleftrightarrow &
-\text{always} \\
+  &\Longleftrightarrow \text{always} \\
 e, s, h \models \False
-& \Longleftrightarrow &
-\text{never} \\
+  &\Longleftrightarrow \text{never} \\
 e, s, h \models E_1 = E_2
-& \Longleftrightarrow &
-(\Eval{E_1 = E_2} = \true) \land h = \emptyset \\
+  &\Longleftrightarrow (\Eval{E_1 = E_2} = \true) \land h = \emptyset \\
 e, s, h \models E_1 > E_2
-& \Longleftrightarrow &
-(\Eval{E_1 > E_2} = \true) \land h = \emptyset \\
+  &\Longleftrightarrow (\Eval{E_1 > E_2} = \true) \land h = \emptyset \\
 e, s, h \models E \in X
-& \Longleftrightarrow &
-(\Eval{E \in X} = \true) \land h = \emptyset \\
+  &\Longleftrightarrow (\Eval{E \in X} = \true) \land h = \emptyset \\
 e, s, h \models \exists x.\ P
-& \Longleftrightarrow &
-\exists v \in \Val.\ e[x \mapsto v], s, h \models P
-\end{array}
-\]
-}
-
-{\small\color{blue}
-\[
-\begin{array}{@{}rcl@{}}
-e, s, h \models P_1 \star P_2
-& \Longleftrightarrow &
-\begin{aligned}[t]
-& \exists h_1, h_2 \in \Heap.\ h = h_1 \uplus h_2 \land \\
-& e, s, h_1 \models P_1 \land e, s, h_2 \models P_2
-\end{aligned} \\
-e, s, h \models \Emp
-& \Longleftrightarrow &
-h = \emptyset \\
-e, s, h \models \displaystyle\mathop{\circledast}_{E_1 \le x < E_2} P
-& \Longleftrightarrow &
-\begin{aligned}[t]
-& \Eval{E_1} = i \in \mathbb{N}
-  \land \Eval{E_2} = k \in \mathbb{N} \land \\
-& \bigl(i < k \Rightarrow
-  \exists h_i, \ldots, h_{k-1}.\ h = h_i \uplus \cdots \uplus h_{k-1}
-  \land \\
-& \qquad \forall j.\ i \le j < k.\ e, s, h_j \models P[j/x]\bigr) \land \\
-& \bigl(i \ge k \Rightarrow h = \emptyset\bigr)
-\end{aligned} \\
-e, s, h \models E_1 \mapsto E_2
-& \Longleftrightarrow &
-h = \{\Eval{E_1} \mapsto \Eval{E_2}\} \\
-e, s, h \models \Pred(\vec{E})
-& \Longleftrightarrow &
-\cdots
-\end{array}
-\]
-}
+  &\Longleftrightarrow \exists v \in \Val.\ e[x \mapsto v], s, h \models P \\[1ex]
+{\color{blue} e, s, h \models P_1 \star P_2}
+  &{\color{blue} \Longleftrightarrow \begin{aligned}[t]
+    & \exists h_1, h_2 \in \Heap.\ h = h_1 \uplus h_2 \land \\
+    & e, s, h_1 \models P_1 \land e, s, h_2 \models P_2
+    \end{aligned}} \\
+{\color{blue} e, s, h \models \Emp}
+  &{\color{blue} \Longleftrightarrow h = \emptyset} \\
+{\color{blue} e, s, h \models \displaystyle\mathop{\circledast}_{E_1 \le x < E_2} P}
+  &{\color{blue} \Longleftrightarrow \begin{aligned}[t]
+    & \Eval{E_1} = i \in \mathbb{N}
+      \land \Eval{E_2} = k \in \mathbb{N} \land \\
+    & \bigl(i < k \Rightarrow
+      \exists h_i, \ldots, h_{k-1}.\ h = h_i \uplus \cdots \uplus h_{k-1}
+      \land \\
+    & \qquad \forall j.\ i \le j < k.\ e, s, h_j \models P[j/x]\bigr) \land \\
+    & \bigl(i \ge k \Rightarrow h = \emptyset\bigr)
+    \end{aligned}} \\
+{\color{blue} e, s, h \models E_1 \mapsto E_2}
+  &{\color{blue} \Longleftrightarrow h = \{\Eval{E_1} \mapsto \Eval{E_2}\}} \\
+{\color{blue} e, s, h \models \Pred(\vec{E})}
+  &{\color{blue} \Longleftrightarrow \cdots}
+\end{align*}
 
 \subsubsection*{Separation Logic Rules}
 Some core proof rules for the language without functions are:
 
-{\scriptsize
-\[
-\begin{array}{@{}c@{\quad}l@{}}
-\dfrac{x \notin \pv(E')}
-      {\triple{x = E' \star E \in \Val}{x := E}{x = E[E'/x]}}
-& \textsc{assign} \\[4ex]
-
-\dfrac{x \notin \pv(E')}
-      {\triple{x = E' \star E \mapsto E_1}
-              {x := [E]}
-              {x = E_1[E'/x] \star E[E'/x] \mapsto E_1[E'/x]}}
-& \textsc{lookup} \\[4ex]
-
-\dfrac{}
-      {\triple{E_1 \mapsto E \star E_2 \in \Val}
-              {[E_1] := E_2}
-              {E_1 \mapsto E_2}}
-& \textsc{mutate} \\[4ex]
-
-\dfrac{x \notin \pv(E')}
-      {\triple{x = E' \star E \in \mathbb{N}}
-              {x := \mathsf{new}(E)}
-              {\exists y.\ x = y \star
-               \mathop{\circledast}_{0 \le i < E[E'/x]}((y + i) \mapsto \Null)}}
-& \textsc{new} \\[4ex]
-
-\dfrac{}
-      {\triple{E \mapsto E_1}{\mathsf{dispose}(E)}{\Emp}}
-& \textsc{dispose} \\[4ex]
-
-\dfrac{}
-      {\triple{\Emp}{\mathsf{skip}}{\Emp}}
-& \textsc{skip} \\[4ex]
-
-\dfrac{\triple{P}{C_1}{Q} \qquad \triple{Q}{C_2}{R}}
-      {\triple{P}{C_1;\ C_2}{R}}
-& \textsc{seq} \\[4ex]
-
-\dfrac{\triple{P \land E}{C_1}{Q_1}
-       \qquad
-       \triple{P \land \neg E}{C_2}{Q_2}}
-      {\triple{P \star E \in \Bool}
-              {\mathsf{if}\ (E)\ C_1\ \mathsf{else}\ C_2}
-              {Q_1 \lor Q_2}}
-& \textsc{if} \\[4ex]
-
-\dfrac{\triple{P \land E}{C}{P \star E \in \Bool}}
-      {\triple{P \star E \in \Bool}
-              {\mathsf{while}\ (E)\ C}
-              {P \land \neg E}}
-& \textsc{while} \\[4ex]
-
-\dfrac{\triple{P}{C}{Q}
-       \qquad
-       \Mod(C) \cap \pv(R) = \emptyset}
-      {\triple{P \star R}{C}{Q \star R}}
-& \textsc{frame} \\[4ex]
-
-\dfrac{\models \blueassn{P \Rightarrow P'}
-       \qquad
-       \triple{P'}{C}{Q'}
-       \qquad
-       \models \blueassn{Q' \Rightarrow Q}}
-      {\triple{P}{C}{Q}}
-& \textsc{cons} \\[4ex]
-
-\dfrac{\triple{P}{C}{Q}}
-      {\triple{\exists x.\ P}{C}{\exists x.\ Q}}
-& \textsc{exists} \\[4ex]
-
-\dfrac{\triple{P_1}{C}{Q} \qquad \triple{P_2}{C}{Q}}
-      {\triple{P_1 \lor P_2}{C}{Q}}
-& \textsc{disj}
-\end{array}
-\]
-}
+\begin{mathpar}
+\inferrule*[right=\textsc{assign}]
+  {x \notin \pv(E')}
+  {\triple{x = E' \star E \in \Val}{x := E}{x = E[E'/x]}}
+\and
+\inferrule*[right=\textsc{lookup}]
+  {x \notin \pv(E')}
+  {\triple{x = E' \star E \mapsto E_1}
+          {x := [E]}
+          {x = E_1[E'/x] \star E[E'/x] \mapsto E_1[E'/x]}}
+\and
+\inferrule*[right=\textsc{mutate}]
+  { }
+  {\triple{E_1 \mapsto E \star E_2 \in \Val}{[E_1] := E_2}{E_1 \mapsto E_2}}
+\and
+\inferrule*[right=\textsc{new}]
+  {x \notin \pv(E')}
+  {\triple{x = E' \star E \in \mathbb{N}}
+          {x := \mathsf{new}(E)}
+          {\exists y.\ x = y \star
+           \mathop{\circledast}_{0 \le i < E[E'/x]}((y + i) \mapsto \Null)}}
+\and
+\inferrule*[right=\textsc{dispose}]
+  { }
+  {\triple{E \mapsto E_1}{\mathsf{dispose}(E)}{\Emp}}
+\and
+\inferrule*[right=\textsc{skip}]
+  { }
+  {\triple{\Emp}{\mathsf{skip}}{\Emp}}
+\and
+\inferrule*[right=\textsc{seq}]
+  {\triple{P}{C_1}{Q} \\ \triple{Q}{C_2}{R}}
+  {\triple{P}{C_1;\ C_2}{R}}
+\and
+\inferrule*[right=\textsc{if}]
+  {\triple{P \land E}{C_1}{Q_1} \\
+   \triple{P \land \neg E}{C_2}{Q_2}}
+  {\triple{P \star E \in \Bool}
+          {\mathsf{if}\ (E)\ C_1\ \mathsf{else}\ C_2}
+          {Q_1 \lor Q_2}}
+\and
+\inferrule*[right=\textsc{while}]
+  {\triple{P \land E}{C}{P \star E \in \Bool}}
+  {\triple{P \star E \in \Bool}
+          {\mathsf{while}\ (E)\ C}
+          {P \land \neg E}}
+\and
+\inferrule*[right=\textsc{frame}]
+  {\triple{P}{C}{Q} \\
+   \Mod(C) \cap \pv(R) = \emptyset}
+  {\triple{P \star R}{C}{Q \star R}}
+\and
+\inferrule*[right=\textsc{cons}]
+  {\models \blueassn{P \Rightarrow P'} \\
+   \triple{P'}{C}{Q'} \\
+   \models \blueassn{Q' \Rightarrow Q}}
+  {\triple{P}{C}{Q}}
+\and
+\inferrule*[right=\textsc{exists}]
+  {\triple{P}{C}{Q}}
+  {\triple{\exists x.\ P}{C}{\exists x.\ Q}}
+\and
+\inferrule*[right=\textsc{disj}]
+  {\triple{P_1}{C}{Q} \\ \triple{P_2}{C}{Q}}
+  {\triple{P_1 \lor P_2}{C}{Q}}
+\end{mathpar}
 
 \subsubsection*{Soundness of Separation Logic}
 \[
 \vdash \{P\} C \{Q\} \Rightarrow \models \{P\} C \{Q\}
 \]
 
-
+\
 
 \end{document}

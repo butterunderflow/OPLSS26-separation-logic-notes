@@ -56,7 +56,7 @@ Verification and Bug Detection at Scale}}
 \fancyhead[C]{}
 \fancyhead[R]{\large \sffamily \bfseries Philippa Gardner}
 \fancyfoot[L]{\fancyhdrbox[b]{\sffamily \small Compiled By: \\ 
-\normalsize \sffamily Dinghong Zhong, Samuel Dodson,Daniel Pinto}}
+\normalsize \sffamily Dinghong Zhong, Samuel Dodson, Daniel Pinto}}
 \fancyfoot[C]{\thepage}
 \fancyfoot[R]{\fancyhdrbox[b]{\includegraphics[width=1in]{oplssLogo.png}}}
 \renewcommand{\footrulewidth}{0.5pt}
@@ -255,7 +255,7 @@ e, s, h \models \exists x.\ P
 \label{satisfaction}
 \end{figure}
 
-You can think of $P_1 \star P_2$ as separation, and $P_1 \land P_2$ as overlap.
+\textbf{Note.} One can think of $P_1 \star P_2$ as separation, and $P_1 \land P_2$ as overlap.
 So, for example, $10 \mapsto 1 \star 10 \mapsto 2$ is unsatisfiable, as separate heaps cannot have any intersection in their domains---conversely, $10 \mapsto 1 \land 11 \mapsto 1$ is unsatisfiable because the two heaps do not have exactly identical domains.
 Note that $\land$ might superficially seem equivalent to $=$, but the distinction is best revealed by the idiom $P \star \True$.
 

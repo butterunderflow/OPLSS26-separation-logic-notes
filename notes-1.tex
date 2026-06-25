@@ -224,14 +224,14 @@ e, s, h \models E \in X
 e, s, h \models \exists x.\ P
   &\Longleftrightarrow \exists v \in \Val.\ e[x \mapsto v], s, h \models P \\[1ex]
 {\color{blue} e, s, h \models P_1 \star P_2}
-  &{\color{blue} \Longleftrightarrow \begin{aligned}[t]
+  &{\color{blue}\ \Longleftrightarrow \begin{aligned}[t]
     & \exists h_1, h_2 \in \Heap.\ h = h_1 \uplus h_2 \land \\
     & e, s, h_1 \models P_1 \land e, s, h_2 \models P_2
     \end{aligned}} \\
 {\color{blue} e, s, h \models \Emp}
-  &{\color{blue} \Longleftrightarrow h = \emptyset} \\
+  &{\color{blue}\ \Longleftrightarrow h = \emptyset} \\
 {\color{blue} e, s, h \models \displaystyle\mathop{\circledast}_{E_1 \le x < E_2} P}
-  &{\color{blue} \Longleftrightarrow \begin{aligned}[t]
+  &{\color{blue}\ \Longleftrightarrow \begin{aligned}[t]
     & \Eval{E_1} = i \in \mathbb{N}
       \land \Eval{E_2} = k \in \mathbb{N} \land \\
     & \bigl(i < k \Rightarrow
@@ -241,9 +241,9 @@ e, s, h \models \exists x.\ P
     & \bigl(i \ge k \Rightarrow h = \emptyset\bigr)
     \end{aligned}} \\
 {\color{blue} e, s, h \models E_1 \mapsto E_2}
-  &{\color{blue} \Longleftrightarrow h = \{\Eval{E_1} \mapsto \Eval{E_2}\}} \\
+  &{\color{blue}\ \Longleftrightarrow h = \{\Eval{E_1} \mapsto \Eval{E_2}\}} \\
 {\color{blue} e, s, h \models \Pred(\vec{E})}
-  &{\color{blue} \Longleftrightarrow \cdots}
+  &{\color{blue}\ \Longleftrightarrow \cdots}
 \end{align*}
 
 \subsubsection*{Separation Logic Rules}

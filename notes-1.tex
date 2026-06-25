@@ -83,7 +83,7 @@ Verification and Bug Detection at Scale\\[2ex]
 \end{center}
 \section{Hoare Logic and Its Scalability Problem}
 
-\subsubsection*{Overview of Hoare Logic}
+\subsection{Overview of Hoare Logic}
 Hoare logic is a reasoning system for proving the specifications of programs.
 It uses Hoare triples, written $\{P\} C \{Q\}$, to describe program specifications, where $C$ is the program, and $P$ and $Q$ are assertions that respectively describe pre- and post-conditions.
 A Hoare triple is true if, whenever the precondition $P$ holds before executing the program $C$, the postcondition $Q$ will hold after executing $C$.
@@ -93,7 +93,7 @@ For example, the Hoare triple $\{ x = 0 \}\ x \defeq x + 1\ \{ x = 1 \}$
 says that if $x$ is $0$ before executing the assignment $x := x + 1$,
 then $x$ is $1$ afterward.
 
-\subsubsection*{Separation Matters in Program Verification}
+\subsection{Separation Matters in Program Verification}
 For programs that manipulate heap-allocated data structures (like linked lists),
 awareness of difference heap locations (pointers) is crucial for reasoning about
 program behavior.
@@ -180,7 +180,7 @@ With this separating connective, we can extend the specification in a compositio
 
 \textbf{Note.} The separating conjunction operator bears superficial resemblance to the disjoint union; however, where the disjoint union re-indexes members of sets to reconcile intersection, the separating conjunction operator enforces that the two operands are disjoint.
 
-\subsubsection*{Syntax of Separation Logic Assertions}
+\subsection{Syntax of Separation Logic Assertions}
 \textbf{Assertions.}
 The set of \emph{assertions}, $\Assert$, ranged over by
 $P, P_1, Q, Q_1, \ldots$, is defined by:
@@ -204,7 +204,7 @@ E \mapsto E
 & \text{cell assertion}
 \end{align*}
 
-\subsubsection*{Meaning of Separation Logic Assertions}
+\subsection{Meaning of Separation Logic Assertions}
 What kind of program states does an assertion describe?
 The meaning of the main assertions is given by the satisfaction relation $e, s,
 h \models P$, which says that the assertion $P$ is satisfied in the program
@@ -266,7 +266,7 @@ by heap $\{10 \mapsto 1\}$, because $\_$ is any value).
 Roughly, instead of ``are these things equal,'' it's ``can these things be made
 equal.''
 
-\subsubsection*{Separation Logic Rules}
+\subsection{Separation Logic Rules}
 
 \begin{figure}
 \begin{mathpar}

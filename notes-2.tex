@@ -225,11 +225,34 @@ Let's cosider tthe example of the previous lecture, in particular:
  
 Let's use proof rules to verify lines 5 through 12.
 
-\begin{figure}
+\begin{figure}[H]
 \[
+\begin{prooftree}
+\hypo{\dots}
+\infer1[\textbf{1}]{\Gamma \entails \hoareT{P}{t := [x+1]}{S}}
+\hypo{\dots}
+\infer1[\textbf{2}]{\Gamma \entails \hoareT{S}{n := llent(t)}{R}}
+\infer2[seq]{\Gamma \entails \hoareT{P}{t := [x+1] ; b := llen(t)}{R}}
+\hypo{\dots}
+\infer1[]{\Gamma \entails \hoareT{R}{n := n + 1}{Q}}
+\infer2[seq]{\Gamma \entails \hoareT{P}{t := [x+1] ; b := llen(t); n := n+1}{Q}}
+\infer1[exists $\times$ 3]{\Gamma \entails \hoareT{\exists v,\beta,y. P}{t := [x+1] ; b := llen(t); n := n+1}{\exists v,\beta,y. Q}}
+\end{prooftree}
 \]
 \label{fig:llen_innerB}
 \caption{Proof fort LLen inner block}
 \end{figure}
+
+If we allow $P,S,R,Q$ to stand for:
+
+\begin{itemize}
+	\item $P=x \mapsto v,y \star \alpha = v : \beta \star list(y,\beta) \star n,t=null$
+	\item $S = x \mapsto v,y \star \alpha = v:\beta \star list(y,\beta) \star n=null \star t=y$
+	\item $R = x \mapsto v, y \star \alpha = v : \beta \star list(y,\beta) \star n = | \beta |$
+	\item $Q = x \mapsto v, y \star \alpha = v : \beta \star list(y,\beta) \star n = | \beta | + 1$
+\end{itemize}
+
+Then we can see most of the work is just either joining commands naturally via the \textbfr{seq} rule, or unfolding defintitions so we can meet the precondition of a function call. (as can be seen by the $S$ condition).  
+
 
 \end{document}

@@ -89,20 +89,20 @@ Verification and Bug Detection at Scale\\[2ex]
 \large Lecture 2 - \slshape June 25, 2026
 \end{center}
 
-This is the notes for the secobd lecture of the OPLSS 2026 course on Separation
+These are the notes for the second lecture of the OPLSS 2026 course on Separation
 Logic and Compositional Symbolic Execution, taught by Philippa Gardner. 
 
-\section{Describing Structtures Beyond Classic Linked Lists}
+\section{Describing Structures Beyond Classic Linked Lists}
 
-Separation logic also allows us to describe complex structures, such as N-arty trees:
+Separation logic also allows us to describe complex structures, such as N-ary trees:
 
 \begin{alignat*}{3}
 tree(x,c) &\quad \on{def}{=}\quad && (x \mapsto 0,\_ \star c = 1)\\
 &\quad \quad && \vee \left(\exists\   n > 1, \vec{p}, \vec{c}. x \mapsto n \star c = \sum_{i = 1}^n c_i \star P(n,c) \right)\\
-P(n,c) &\quad = \quad &&  \bigcircledast_{1 \leq i \leq n} (x+i \mapsto p_i \star tree(p_i,c_i) \wedge 1 \leq c_i \leq c) )
+P(n,c) &\quad = \quad &&  \bigcircledast_{1 \leq i \leq n} (x+i \mapsto p_i \star tree(p_i,c_i) \wedge 1 \leq c_i \leq c)
 \end{alignat*}
 
-The predicate $tree(x,c)$ describes a tree $x$ with $c$ total cells used by either constructing a leaf with value $0$ (and an empty box for uniformtiy), or by stablishing what the head $x$ is pointing to, and ensuring we have enough space for each of the children ($c_i$) and describing them recutrsively.
+The predicate $tree(x,c)$ describes a tree $x$ with $c$ total cells used by either constructing a leaf with value $0$ (and an empty box for uniformity), or by establishing what the head $x$ is pointing to, and ensuring we have enough space for each of the children ($c_i$) and describing them recursively.
 
 
 An example of an N-ary Tree described by the specification is the one portrayed in Figure \ref{fig:ntree}
@@ -156,11 +156,11 @@ An example of an N-ary Tree described by the specification is the one portrayed 
 \caption{N-ary Tree}
 \end{figure}
 
-Following the same schema, we could also define Hasht Tables, Doubly Linked Lists, Collections-C linked lists, $\dots$
+Following the same schema, we could also define Hash Tables, Doubly Linked Lists, Collections-C linked lists, $\dots$
 
 \section{Formalizing Proof Sketches}
 
-In the previous lecture we saw how we could describe informally the behaviour of a program, such as \verb!LLen! (which comptuted the length of a linked list recursively) via Hoare Triplets with pre and post conditions encoded in separation logic. But how can we reason about the program in a formal way?
+In the previous lecture we saw how we could describe informally the behaviour of a program, such as \verb!LLen! (which computed the length of a linked list recursively) via Hoare triples with pre and postconditions encoded in separation logic. But how can we reason about the program in a formal way?
 
 For that, we'll use the proof rules defined in Figure \ref{fig:proof_rules} (\textbf{\textcolor{red}{frame}}, \textbfr{cons}equence, \textbfr{exist}ential elimination, and \textbfr{seq}uencing) to do proof derivations.
 
@@ -192,13 +192,13 @@ For that, we'll use the proof rules defined in Figure \ref{fig:proof_rules} (\te
 \end{prooftree}
 \]
 \label{fig:proof_rules}
-\caption{Proof rules for reasoning about Hoare Triplets}
+\caption{Proof rules for reasoning about Hoare triples}
 \end{figure}
 
-\textbfr{Notation}: $mod : C \rightarrow Var$ is a function which maps commands to the (program) variables which are (possiblty) modified, while $fv$ returns the set of free variables (program or logical) from an assertion expression.
+\textbfr{Notation}: $mod : C \rightarrow Var$ is a function which maps commands to the (program) variables which are (possibly) modified, while $fv$ returns the set of free variables (program or logical) from an assertion expression.
 
 
-Let's cosider tthe example of the previous lecture, in particular:
+Let's consider the example of the previous lecture, in particular:
 
 \begin{ntabular}{l}
 \crlf \} else \{\\
@@ -231,16 +231,16 @@ Let's use proof rules to verify lines 5 through 12.
 \hypo{\dots}
 \infer1[\textbf{1}]{\Gamma \entails \hoareT{P}{t := [x+1]}{S}}
 \hypo{\dots}
-\infer1[\textbf{2}]{\Gamma \entails \hoareT{S}{n := llent(t)}{R}}
-\infer2[seq]{\Gamma \entails \hoareT{P}{t := [x+1] ; b := llen(t)}{R}}
+\infer1[\textbf{2}]{\Gamma \entails \hoareT{S}{n := llen(t)}{R}}
+\infer2[seq]{\Gamma \entails \hoareT{P}{t := [x+1] ; n := llen(t)}{R}}
 \hypo{\dots}
 \infer1[]{\Gamma \entails \hoareT{R}{n := n + 1}{Q}}
-\infer2[seq]{\Gamma \entails \hoareT{P}{t := [x+1] ; b := llen(t); n := n+1}{Q}}
-\infer1[exists $\times$ 3]{\Gamma \entails \hoareT{\exists v,\beta,y. P}{t := [x+1] ; b := llen(t); n := n+1}{\exists v,\beta,y. Q}}
+\infer2[seq]{\Gamma \entails \hoareT{P}{t := [x+1] ; n := llen(t); n := n+1}{Q}}
+\infer1[exists $\times$ 3]{\Gamma \entails \hoareT{\exists v,\beta,y. P}{t := [x+1] ; n := llen(t); n := n+1}{\exists v,\beta,y. Q}}
 \end{prooftree}
 \]
 \label{fig:llen_innerB}
-\caption{Proof fort LLen inner block}
+\caption{Proof for LLen inner block}
 \end{figure}
 
 If we allow $P,S,R,Q$ to stand for:
@@ -252,7 +252,7 @@ If we allow $P,S,R,Q$ to stand for:
 	\item $Q = x \mapsto v, y \star \alpha = v : \beta \star list(y,\beta) \star n = | \beta | + 1$
 \end{itemize}
 
-Then we can see most of the work is just either joining commands naturally via the \textbfr{seq} rule, or unfolding defintitions so we can meet the precondition of a function call. (as can be seen by the $S$ condition).  
+Then we can see most of the work is just either joining commands naturally via the \textbfr{seq} rule, or unfolding definitions so we can meet the precondition of a function call. (as can be seen by the $S$ condition).  
 
 
 \end{document}

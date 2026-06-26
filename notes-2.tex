@@ -162,7 +162,7 @@ Following the same schema, we could also define Hasht Tables, Doubly Linked List
 
 In the previous lecture we saw how we could describe informally the behaviour of a program, such as \verb!LLen! (which comptuted the length of a linked list recursively) via Hoare Triplets with pre and post conditions encoded in separation logic. But how can we reason about the program in a formal way?
 
-For that, we'll use the proof rules defined in Figure to do proof derivations.
+For that, we'll use the proof rules defined in Figure \ref{fig:proof_rules} (\textbf{\textcolor{red}{frame}}, \textbfr{cons}equence, \textbfr{exist}ential elimination, and \textbfr{seq}uencing) to do proof derivations.
 
 \begin{figure}[H]
 \[
@@ -179,11 +179,57 @@ For that, we'll use the proof rules defined in Figure to do proof derivations.
 \infer3[cons]{\hoareT{P}{C}{Q}}
 \end{prooftree}
 \]
+\[
+\begin{prooftree}
+\hypo{\vdash \hoareT{P}{C}{Q}}
+\infer1[exists]{\vdash \hoareT{\exists x. P}{C}{\exists x. Q}}
+\end{prooftree}
+\quad
+\begin{prooftree}
+\hypo{\vdash \hoareT{P}{C_1}{Q}}
+\hypo{\vdash \hoareT{Q}{C_2}{R}}
+\infer2[seq]{\vdash \hoareT{P}{C_1;C_2}{R}}
+\end{prooftree}
+\]
 \label{fig:proof_rules}
 \caption{Proof rules for reasoning about Hoare Triplets}
 \end{figure}
 
- 
+\textbfr{Notation}: $mod : C \rightarrow Var$ is a function which maps commands to the (program) variables which are (possiblty) modified, while $fv$ returns the set of free variables (program or logical) from an assertion expression.
 
+
+Let's cosider tthe example of the previous lecture, in particular:
+
+\begin{ntabular}{l}
+\crlf \} else \{\\
+\crlf \tab \assert{$\text{x}=x \star list(x,\alpha)\star n,t = null \star x \not = null$}\\
+\crlf \tab \comment{unfold list predicate to recursive case, identify the resource needed}\\
+\crlf \tab \assert{$\exists v,\beta, y. x \mapsto v, y \star \alpha = v : \beta \star list(y,\beta) \star n,t=null$}\\
+\crlf \tab \commentBlock{exists,frame+cons}{
+\begin{ntabular}[5]{l}
+	\crlf \assert{$x \mapsto v,y \star list(y,\beta) \star n,t=null$}\\
+	\crlf t := [x + 1];\\
+	\crlf \comment{We produce a precondition that's compatible with LLen precondition}\\
+	\crlf \assert{$x \mapsto v,y \star list(y,\beta) \star n=null \star t = y$}\\
+	\crlf n := llen(t);\\
+	\crlf \assert{$x \mapsto v,y \star list(y,\beta) \star n = |\beta |$}\\
+	\crlf n := n + 1;\\
+	\crlf \assert{$x \mapsto v, y \star list(y,\beta) \star n = |\beta | + 1$}
+\end{ntabular}
+}\\
+\crlf \tab \comment{we are going to do one final intermediate step so we can arrive to LLen post-condition easier}\\
+\crlf \tab \assert{$\exists v,\beta, y. x \mapsto v, y \star \alpha = v:\beta \star list(y,\beta) \star n = |\beta | + 1$}\\
+\crlf \tab \assert{$list(x,\alpha) \star n = |\alpha |$}\\
+\crlf \}
+\end{ntabular}
+ 
+Let's use proof rules to verify lines 5 through 12.
+
+\begin{figure}
+\[
+\]
+\label{fig:llen_innerB}
+\caption{Proof fort LLen inner block}
+\end{figure}
 
 \end{document}

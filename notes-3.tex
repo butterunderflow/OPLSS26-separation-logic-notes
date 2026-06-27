@@ -97,14 +97,17 @@ Logic and Compositional Symbolic Execution, taught by Philippa Gardner.
 The official lecture slides are available at \url{https://gillianplatform.github.io/docs/oplss26/Lecture3.pdf}.
 
 
-\section{Compositional Symbolic Execution}
+\section{Compositional Symbolic Execution on WISL}
+
+The linear memory model of the WHILE language, given in the previous lecture has been useful demonstrator memory model for introducing separation logic. However, it has some big caveats such as generating way too numerous constraints on buffers regarding pointer arithmetic and buffer separation. \\
+
+One way in which analysis tools for real world languages reason about memory odels in a tractable way, is by viewing the heap not as a map index by naturals, but rather as a collection of memory blocks, and treating pointers as block-offset pairs. Thus, we introduce WISL, a more general language that's still very close to WHILE, and which satisfies this memory model.  \\
 
 
-Let's recall frotm the previous lecture, tthe symbolic state used in Gillian-While has four parts:
 \[
 \hat{\sigma} = (\hat{s}, \hat{\mu}, \widehat{\Pred}, \hat{\pi})
 \]
-where $\hat{s} : \mathsf{PVar} \rightharpoonup_{\mathrm{fin}} \mathsf{LExp}$ is the symbolic store, $\hat{\mu} : \mathsf{LExp} \rightharpoonup_{\mathrm{fin}} \mathsf{LExp}$ is the symbolic linear heap, $\widehat{\Pred}$ stores user-defined predicate instances, and $\hat{\pi}$ is the symbolic path condition.
+where $\hat{s} : \mathsf{PVar} \rightharpoonup_{\mathrm{fin}} \mathsf{LExp}$ is the symbolic store, $\hat{\mu} : \mathsf{LExp} \rightharpoonup_{\mathrm{fin}} \mathsf{LExp}$ is the symbolic linear heap, $\widehat{\Pred}$ stores user-defined predicate instances, and $\hat{\pi}$ is the symbolic path condition.\\
 
 For Gillian to reason about (memory) models such as linear models (with/out unique branch matching/cut branching/negative informartion $\dots$),fractional ownership models, OOP models, and many (many) more, we need to establish soundness conditions that can relate concrete with symbolic models.
 
@@ -119,7 +122,7 @@ OX Soundness enforces that all states reachable by concrete execution, are also 
 
 \subsubsection*{The Under-Approximation (UX) Soudness Codition}
 
-UX Soundness enforces the opposite condition, and thus it's particulartly addequate for bug fiding (i.e: ensure that a bug will arise in the concrete model provided that it shows in the symbolic one):
+UX Soundness enforces the opposite condition, and thus it's particulartly addequate for bug finding (i.e: ensure that a bug will arise in the concrete model provided that it shows in the symbolic one):
 
 \[
 \hat{\sigma},C \reduces \hat{\sigma}' \wedge \sigma' \models \hat{\sigma}' \implies \exists \sigma',  \sigma, C \reduces \sigma' \wedge \sigma \models \hat{\sigma} 
@@ -171,6 +174,179 @@ Gillian extends the notion of soundness for its 4-tuple state:
 \draw[arrow] (note2.west) -- (mu.east);
 \draw[arrow] (note3.west) -- (memPred.east);
  
+\end{tikzpicture}
+\end{figure}
+
+Notice that on top of the soundness condition over the heap, we also require a soundness condition over the store and assertions. Moreover, we require another heap for the assertion since they might predicate over memory: $list(x,\alpha)$.
+
+\section{Extending Proof Rules to WISL}
+
+To formally reason beyond proof sketches, we also need to extend the proof rules we saw in the previous lectures. For that, we'll use the notation $\mu.\alpha(\vec{v})\rightsquigarrow_{\mathcal M} o':(\mu',\vec v')$ for an action $\alpha$, which is run over the memory $\mu$ and uses the parameters $\vec{v}$ and results in an outcome $o$ (which can be $ok$, $error$, $miss$...), a memory $\mu'$ and return arguments $\vec v'$.
+
+\begin{figure}[H]
+\begin{tikzpicture}[font=\Large]
+ 
+% ================= OX frame =================
+\begin{scope}
+  \ruleframe{17.0}{3.75}{0.9}
+    {OX frame}{2.7}
+    {``If memory is removed by an action, (non-missing)\ \ behaviour is unaffected''}
+    {$\begin{array}[t]{@{}ll@{}}
+       \text{If} & (\mu\cdot\mu_f).\alpha(\vec v)\rightsquigarrow_{\mathcal M} o:(\mu',\vec v')\\[8pt]
+       \text{then} & \exists\,\mu'',\vec v'',o'.\ \mu.\alpha(\vec v)\rightsquigarrow_{\mathcal M} o':(\mu'',\vec v'')\ \text{and}\\[8pt]
+       & \quad(o'\neq miss \Rightarrow (o'=o\ \text{and}\ \vec v''=\vec v'\ \text{and}\ \mu'=\mu''\cdot\mu_f))
+     \end{array}$}
+\end{scope}
+ 
+% ================= UX frame =================
+\begin{scope}[shift={(0,-4.1)}]
+  \ruleframe{17.0}{3.3}{0.9}
+    {UX frame}{2.7}
+    {``If memory is added by an action, (non-missing) behaviour is unaffected''}
+    {$\begin{array}[t]{@{}ll@{}}
+       \text{If} & \mu.\alpha(\vec v)\rightsquigarrow_{\mathcal M} o:(\mu',\vec v')\ \text{and}\ o\neq miss\ \text{and}\ \mu'\cdot\mu_f\ \text{is defined}\\[8pt]
+       \text{then} & (\mu\cdot\mu_f).\alpha(\vec v)\rightsquigarrow_{\mathcal M} o:(\mu'\cdot\mu_f,\vec v')
+     \end{array}$}
+\end{scope}
+ 
+\end{tikzpicture}
+\end{figure}
+
+Although the UX frame rule is fairly straight-forward (we can always add more memory $\mu_f$ without affecting behaviour as long as the action didn't resulted in a $miss$, which is correct, since if we could procure a bug using $\mu$ memory, we cal also procure it using more than $\mu$), the OX frame rule is more subtle, since to capture that we can extend
+analysis results to larger states we must say, perhaps counterintuitively, that removing a "frame" $\mu_f$ from $\mu \cdot \mu_f$ results in either a $miss$ outcome or the same behaviour as executing from the full
+state, rather than more straightforwardly stating something about adding more state\\
+
+Moreover, we also need to "lift" the soundness condition into our new context (which is more easily expressed as making the following diagrams commute):
+
+\begin{figure}[H]
+\begin{tikzpicture}[
+    >=Stealth,
+    every node/.style={font=\small},
+    title/.style={
+        fill=cyan!20,
+        rounded corners,
+        minimum width=3.2cm,
+        minimum height=1cm,
+        font=\Large
+    }
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Top box
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\draw (0,0) rectangle (17,-6);
+
+\node[title,anchor=north west] at (0,0) {OX soundness};
+
+\node[anchor=north west,text width=10cm,align=left]
+at (3.7,-0.3)
+{
+{\Large All \emph{concrete} actions can be simulated by a\\
+corresponding \emph{symbolic} action}
+
+\vspace{0.5em}
+
+If
+\[
+\mu.\alpha(\vec v)\rightsquigarrow
+o:(\mu',\vec v')
+\]
+and
+\[
+\theta,\mu\models_{\rm Mem}\hat\mu,
+\qquad
+[\![\vec E]\!]_\theta=\vec v
+\]
+
+then
+\[
+\exists\hat\mu',\hat\pi',\vec E',\theta'.\;
+\hat\mu.\alpha(\vec E)
+\rightsquigarrow
+o:(\hat\mu',\hat\pi',\vec E').
+\]
+};
+
+%%%%%%%%%%%%%%%%%%%%%
+%% Diagram
+%%%%%%%%%%%%%%%%%%%%%
+
+\begin{scope}[shift={(13.4,-1)}]
+
+\node (a) at (0,0) {$\hat\mu$};
+\node (b) at (2.8,0) {$\hat\mu'$};
+
+\node (c) at (0,-2.5) {$\mu$};
+\node (d) at (2.8,-2.5) {$\mu'$};
+
+\draw[dotted,->] (a)--node[above]{$\alpha\rightsquigarrow$}(b);
+\draw[->] (c)--node[below]{$\alpha\rightsquigarrow$}(d);
+
+\draw[->] (a)--node[right]{$\models_{\rm Mem}$}(c);
+\draw[dotted,->] (b)--node[right]{$\models_{\rm Mem}$}(d);
+
+\end{scope}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Bottom box
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\draw (0,-6.5) rectangle (17,-12.5);
+
+\node[title,anchor=north west] at (0,-6.5) {UX soundness};
+
+\node[anchor=north west,text width=10cm,align=left]
+at (3.7,-6.8)
+{
+{\Large All \emph{symbolic} actions can be simulated by a\\
+corresponding \emph{concrete} action}
+
+\vspace{0.5em}
+
+If
+\[
+\hat\mu.\alpha(\vec E)
+\rightsquigarrow
+o:(\hat\mu',\hat\pi',\vec E')
+\]
+
+then
+
+\[
+\exists\mu,\theta.\;
+\theta,\mu\models_{\rm Mem}\hat\mu
+\]
+
+and
+
+\[
+\mu.\alpha(\vec v)
+\rightsquigarrow
+o:(\mu',\vec v').
+\]
+};
+
+%%%%%%%%%%%%%%%%%%%%%
+%% Diagram
+%%%%%%%%%%%%%%%%%%%%%
+
+\begin{scope}[shift={(13.4,-7.5)}]
+
+\node (a) at (0,0) {$\hat\mu$};
+\node (b) at (2.8,0) {$\hat\mu'$};
+
+\node (c) at (0,-2.5) {$\mu$};
+\node (d) at (2.8,-2.5) {$\mu'$};
+
+\draw[->] (a)--node[above]{$\alpha\rightsquigarrow$}(b);
+\draw[dotted,->] (c)--node[below]{$\alpha\rightsquigarrow$}(d);
+
+\draw[dotted,->] (a)--node[right]{$\models_{\rm Mem}$}(c);
+\draw[->] (b)--node[right]{$\models_{\rm Mem}$}(d);
+
+\end{scope}
+
 \end{tikzpicture}
 \end{figure}
 

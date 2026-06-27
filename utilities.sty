@@ -11,7 +11,9 @@
 \RequirePackage{tikz}
 \usetikzlibrary{matrix, arrows.meta}
 \usetikzlibrary{calc,positioning,fit}
- 
+
+
+
 % ---- colors matched to the source image ----
 \definecolor{noteblue}{HTML}{BFE2EE}
 \definecolor{arrowteal}{HTML}{2F7E91}
@@ -34,6 +36,37 @@
     text width=8.6cm, inner sep=9pt
   },
   arrow/.style={->, >=stealth, arrowteal, thick}
+}
+
+ 
+% ---- colors matched to the source image ----
+\definecolor{tabblue}{HTML}{BFE2EE}
+\definecolor{frameborder}{HTML}{2E4A5E}
+\definecolor{titleteal}{HTML}{1F6E78}
+ 
+% reusable macro: draws one rule-frame
+% #1 = width, #2 = height, #3 = header height,
+% #4 = tab label, #5 = tab width, #6 = italic title,
+% #7 = body content (already a tikz node content, math allowed)
+\newcommand{\ruleframe}[7]{%
+  \begin{scope}
+    % --- tab (rounded on the right only) ---
+    \fill[tabblue, rounded corners=3pt] (0,#2-#3) rectangle (#5,#2);
+    \fill[tabblue] (0,#2-#3) rectangle ({#5/2},#2);
+    % --- outer border ---
+    \draw[frameborder, line width=0.9pt] (0,0) rectangle (#1,#2);
+    % --- header separator ---
+    \draw[frameborder, line width=0.9pt] (0,#2-#3) -- (#1,#2-#3);
+    % --- tab label ---
+    \node[font=\bfseries, text=black!85] at ({#5/2},{#2-#3/2}) {#4};
+    % --- italic header title ---
+    \node[anchor=west, font=\normalsize\itshape, text=titleteal,
+          align=left, text width={(#1-#5-0.6)*1cm}]
+      at ({#5+0.3},{#2-#3/2}) {#6};
+    % --- body ---
+    \node[anchor=north west, align=left, inner sep=0pt]
+      at (0.5,{#2-#3-0.35}) {#7};
+  \end{scope}
 }
 
 

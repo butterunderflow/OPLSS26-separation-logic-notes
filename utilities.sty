@@ -10,6 +10,32 @@
 \RequirePackage{expl3}
 \RequirePackage{tikz}
 \usetikzlibrary{matrix, arrows.meta}
+\usetikzlibrary{calc,positioning,fit}
+ 
+% ---- colors matched to the source image ----
+\definecolor{noteblue}{HTML}{BFE2EE}
+\definecolor{arrowteal}{HTML}{2F7E91}
+
+ 
+% ---- colors matched to the source image ----
+\definecolor{noteblue}{HTML}{BFE2EE}
+\definecolor{arrowteal}{HTML}{2F7E91}
+ 
+% ---- style for the light-blue annotation callouts ----
+\tikzset{
+  note/.style={
+    rectangle, rounded corners=1pt, fill=noteblue,
+    align=left, font=\sffamily, text=black!85,
+    text width=5.6cm, inner sep=9pt
+  },
+  notewide/.style={
+    rectangle, rounded corners=1pt, fill=noteblue,
+    align=left, font=\sffamily, text=black!85,
+    text width=8.6cm, inner sep=9pt
+  },
+  arrow/.style={->, >=stealth, arrowteal, thick}
+}
+
 
 
 % --- Custom Color Definitions ---
